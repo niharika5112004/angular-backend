@@ -251,7 +251,7 @@ app.get('/employees/growth', authenticateToken, async (req, res) => {
 // ✅ Serve Angular frontend
 app.use(express.static(path.join(__dirname, 'dist/angular-tut/browser')));
 
-app.get('/*', (req, res) => {
+app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/angular-tut/browser/index.html'));
 });
 
