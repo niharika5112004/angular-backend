@@ -1,4 +1,4 @@
-// server.js
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -10,21 +10,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-//////////////////////////////////////////////////////////
-// DATABASE
-//////////////////////////////////////////////////////////
-
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'employee_db',
-  password: '1234',
-  port: 5432,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
-
-//////////////////////////////////////////////////////////
-// AUTH
-//////////////////////////////////////////////////////////
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
@@ -46,10 +37,6 @@ function verifyAdmin(req, res, next) {
   }
   next();
 }
-
-//////////////////////////////////////////////////////////
-// LOGIN
-//////////////////////////////////////////////////////////
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -95,9 +82,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-//////////////////////////////////////////////////////////
-// REGISTER USER  <-- ADDED
-//////////////////////////////////////////////////////////
 app.post('/register', authenticateToken, verifyAdmin, async (req, res) => {
   const { email, password, role } = req.body;
 
@@ -128,10 +112,6 @@ app.post('/register', authenticateToken, verifyAdmin, async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
-//////////////////////////////////////////////////////////
-// EMPLOYEES CRUD
-//////////////////////////////////////////////////////////
 
 app.get('/employees', authenticateToken, async (req, res) => {
   const result = await pool.query('SELECT * FROM employees ORDER BY id');
@@ -190,10 +170,6 @@ app.delete('/employees/:id', authenticateToken, verifyAdmin, async (req, res) =>
   res.json({ message: 'Deleted' });
 });
 
-//////////////////////////////////////////////////////////
-// DASHBOARD APIs
-//////////////////////////////////////////////////////////
-
 app.get('/employees/count', authenticateToken, async (req, res) => {
   const result = await pool.query('SELECT COUNT(*) FROM employees');
   res.json({ count: parseInt(result.rows[0].count) });
@@ -241,10 +217,6 @@ app.get('/employees/recent-activity', authenticateToken, async (req, res) => {
   }
 });
 
-//////////////////////////////////////////////////////////
-// ANALYTICS
-//////////////////////////////////////////////////////////
-
 app.get('/employees/designation-stats', authenticateToken, async (req, res) => {
   const result = await pool.query(`
     SELECT designation, COUNT(*) as count
@@ -276,7 +248,12 @@ app.get('/employees/growth', authenticateToken, async (req, res) => {
   res.json(result.rows);
 });
 
-//////////////////////////////////////////////////////////
+// ✅ Serve Angular frontend
+app.use(express.static(path.join(__dirname, 'dist/angular-tut/browser')));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist/angular-tut/browser/index.html'));
+});
 
 app.listen(3000, () => {
   console.log('Server running on port 3000 🚀');
