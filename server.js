@@ -16,6 +16,17 @@ const pool = new Pool({
     rejectUnauthorized: false
   }
 });
+
+// ✅ Test DB route
+app.get('/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.json({ success: true, time: result.rows[0] });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -78,7 +89,7 @@ app.post('/login', async (req, res) => {
   } catch (err) {
     console.error('LOGIN ERROR:', err.message, err.stack);
     res.status(500).json({ message: err.message });
-}
+  }
 });
 
 app.post('/register', authenticateToken, verifyAdmin, async (req, res) => {
