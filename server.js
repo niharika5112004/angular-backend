@@ -12,9 +12,13 @@ app.use(express.json());
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: {
+    rejectUnauthorized: false
+  },
+  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 30000,
+  max: 10
 });
-
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
