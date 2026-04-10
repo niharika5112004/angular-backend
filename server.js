@@ -76,9 +76,9 @@ app.post('/login', async (req, res) => {
     res.json({ token: token, role: user.role });
 
   } catch (err) {
-    console.error(err);
+    console.error('LOGIN ERROR:', err.message, err.stack);
     res.status(500).json({ message: err.message });
-  }
+}
 });
 
 app.post('/register', authenticateToken, verifyAdmin, async (req, res) => {
