@@ -11,13 +11,10 @@ app.use(cors());
 app.use(express.json());
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL + '?sslmode=no-verify',
   ssl: {
     rejectUnauthorized: false
-  },
-  connectionTimeoutMillis: 5000,
-  idleTimeoutMillis: 30000,
-  max: 10
+  }
 });
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
